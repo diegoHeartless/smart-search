@@ -4,6 +4,7 @@ import axios from "axios";
 const serviceUrl = 'https://www.ozon.ru/search/?text=fr&from_global=true';
 //let driver = await new Builder().forBrowser('firefox').build();
 export const ozonSearch = async (search: string, redirectUrl?: string, page?: number, tf_state?: string): Promise<string> => {
+    delete axios.defaults.headers.common['Access-Control-Allow-Origin'];
     let response ;
     console.log(tf_state)
     console.log(redirectUrl)

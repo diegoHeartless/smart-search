@@ -3,9 +3,9 @@ import {
   configureStore,
   getDefaultMiddleware,
 } from "@reduxjs/toolkit";
-import createSagaMiddleware, { Saga } from "redux-saga";
-import sagas from "./sagas";
-import {searchReducer} from "../modules/search/reducers/search";
+import createSagaMiddleware, { Saga } from 'redux-saga';
+import sagas from './sagas';
+import {searchReducer} from '../modules/search/reducers/search';
 
 const rootReducers = combineReducers({
   searchReducer: searchReducer

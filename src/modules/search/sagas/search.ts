@@ -105,7 +105,7 @@ function* ozonCallAsync(search: string, page?: number, tfstate?: string): any {
                 response.indexOf('location.replace(')
             )
         ).replaceAll('\\/', '/').replaceAll('\\', '').replaceAll('u0026', '&')
-        console.log('redirect detected')
+
         console.log('redirect url = ' + redirect)
         response = yield call(() => execute(redirect+(tfstate ? `&tf_state=${tfstate}`: '')));
         yield put(tfStateChange(undefined));

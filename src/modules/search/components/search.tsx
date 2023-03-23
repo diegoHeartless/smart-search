@@ -1,12 +1,7 @@
 import React, {ReactElement, useCallback, useEffect, useRef, useState} from 'react';
 import {Button, Card, Carousel, Input, Space} from 'antd';
-import * as parse5 from 'parse5';
-import {searchStart} from "../actions/search";
-import search from "../containers/search";
-import ReactHtmlParser from 'react-html-parser';
-import Item from "antd/es/list/Item";
-import Icon from "antd/es/icon";
-import { useSnapCarousel } from 'react-snap-carousel';
+import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
+import 'pure-react-carousel/dist/react-carousel.es.css';
 
 const { Search } = Input;
 
@@ -18,8 +13,6 @@ interface SearchFieldProps {
 const SearchField = ({content, searchStart}:SearchFieldProps) => {
     console.log(content)
 
-    const { scrollRef, pages, activePageIndex, next, prev, goTo } =
-        useSnapCarousel();
     const onSearch = (value: string) => {
         console.log(value)
         searchStart(value);
@@ -34,35 +27,24 @@ const SearchField = ({content, searchStart}:SearchFieldProps) => {
                 <div>
                     <Card title={con.title} extra={<a href={con.link}>link</a>} style={{ width: 300 }}>
                         <p>{con.price}</p>
+                        <CarouselProvider
+                            totalSlides={con.images.length}
+                            naturalSlideWidth={100}
+                            naturalSlideHeight={100}
 
-                        <ul
-                            ref={scrollRef}
-                            style={{
-                                display: 'flex',
-                                overflow: 'auto',
-                                scrollSnapType: 'x mandatory'
-                            }}
                         >
-                            {con.images.map((image: any) => (
-                                <li
-                                    style={{
-                                        backgroundColor: 'aqua',
-                                        fontSize: '50px',
-                                        width: '250px',
-                                        height: '250px',
-                                        flexShrink: 0,
-                                        color: '#fff',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}
-                                >
-                                    <img src={image?.image?.link}  />
-                                </li>
-                            ))}
-                        </ul>
-                        <button onClick={() => prev()}>Prev</button>
-                        <button onClick={() => next()}>Next</button>
+                            <Slider>
+                            {con.images.map((image, index) => {
+                                console.log(index)
+                                    return (<Slide index={index}>
+                                       <img src={image?.image?.link} width={100} height={100} />
+                                    </Slide>)
+
+                            })}
+                                </Slider>
+                            <ButtonBack>Back</ButtonBack>
+                            <ButtonNext>Next</ButtonNext>
+                    </CarouselProvider>
                     </Card>
                 </div>
             )
