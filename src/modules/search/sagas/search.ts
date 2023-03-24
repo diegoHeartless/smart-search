@@ -10,7 +10,8 @@ function* searchAsync(action: SearchStartAction): any {
 
     let page = 1;
     const resultData: any[] = [];
-    while (resultData.length < 50) {
+    let emptySearch = false;
+    while (!emptySearch && resultData.length < 50) {
         let data = yield select((state: any) => state?.searchReducer?.tfState);
         console.log(data)
         let response: string = yield call(() => ozonCallAsync(action.payload, page, data))
@@ -19,9 +20,9 @@ function* searchAsync(action: SearchStartAction): any {
         const dataState = divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value;
         const searchData = dataState ? JSON.parse(divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value) : undefined;
         console.log(searchData)
-        if (searchData?.items?.length === 0) {
+        if (!searchData || searchData?.items?.length === 0) {
             console.log('search empty')
-            break;
+            emptySearch = true
         }
         searchData?.items.forEach((item: any) => {
             let itemdata: any = {
