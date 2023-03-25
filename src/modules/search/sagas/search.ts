@@ -2,7 +2,7 @@ import {takeEvery, call, put, select} from 'redux-saga/effects';
 import {SEARCH_START, SearchStartAction, searchSuccess, SearchTypes, tfStateChange} from "../actions/search";
 import {execute, ozonSearch} from "../../../rest-services/search-service";
 import * as parse5 from 'parse5';
-import {Simulate} from "react-dom/test-utils";
+import {renderIntoDocument, Simulate} from "react-dom/test-utils";
 
 
 
@@ -10,19 +10,21 @@ function* searchAsync(action: SearchStartAction): any {
 
     let page = 1;
     const resultData: any[] = [];
-    let emptySearch = false;
-    while (!emptySearch && resultData.length < 50) {
+    let validSearch = true;
+    while (validSearch && resultData.length < 50) {
         let data = yield select((state: any) => state?.searchReducer?.tfState);
         console.log(data)
-        let response: string = yield call(() => ozonCallAsync(action.payload, page, data))
-        const htmlDoc = parse5.parseFragment(response);
+        let response: string = yield call(() => ozonCallAsync(action.payload, page, data));
+        console.log(response)
+
+               const htmlDoc = parse5.parseFragment(response);
         const divWithItems = yield call(() => recursiveSearchAsync(htmlDoc.childNodes));
         const dataState = divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value;
         const searchData = dataState ? JSON.parse(divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value) : undefined;
         console.log(searchData)
         if (!searchData || searchData?.items?.length === 0) {
             console.log('search empty')
-            emptySearch = true
+            validSearch = false
         }
         searchData?.items.forEach((item: any) => {
             let itemdata: any = {
@@ -105,7 +107,10 @@ function* ozonCallAsync(search: string, page?: number, tfstate?: string): any {
             response.indexOf('");</script>',
                 response.indexOf('location.replace(')
             )
-        ).replaceAll('\\/', '/').replaceAll('\\', '').replaceAll('u0026', '&')
+        ).replaceAll('\\/', '/')
+            .replaceAll('\\', '')
+            .replaceAll('u0026', '&')
+            .replaceAll('u002b', " ")
 
         console.log('redirect url = ' + redirect)
         response = yield call(() => execute(redirect+(tfstate ? `&tf_state=${tfstate}`: '')));
