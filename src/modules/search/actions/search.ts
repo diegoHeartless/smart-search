@@ -1,6 +1,11 @@
+import e from "express";
+
 export const SEARCH_START = "SEARCH_START";
 export const SEARCH_SUCCESS = "SEARCH_SUCCESS";
 export const TF_STATE_CHANGE = "TF_STATE_CHANGE";
+export const CHANGE_LAST_PAGE = "CHANGE_LAST_PAGE";
+export const SET_STATISTICS_SHOWED = "SET_STATISTICS_SHOWED";
+export const SET_STATISTICS_HIDED = "SET_STATISTICS_HIDED";
 
 export interface SearchStartAction {
     type: typeof SEARCH_START;
@@ -17,15 +22,49 @@ interface TfStateChangeAction {
     payload: string | undefined
 }
 
+export interface ChangeLastPage {
+    type: typeof CHANGE_LAST_PAGE;
+    payload: number
+}
+
+export interface SetStatisticsShowed {
+    type: typeof SET_STATISTICS_SHOWED;
+    payload: number
+}
+
+export interface SetStatisticsHided {
+    type: typeof SET_STATISTICS_HIDED;
+    payload: number
+}
+
 export type SearchTypes =
     | SearchStartAction
     | SearchSuccessAction
-    | TfStateChangeAction;
+    | TfStateChangeAction
+    | ChangeLastPage
+    | SetStatisticsShowed
+    | SetStatisticsHided;
 
 export const searchStart = (search: string): SearchStartAction => ({
     type: SEARCH_START,
     payload: search,
 });
+
+export const changeLastPage = (page: number): ChangeLastPage => ({
+    type: CHANGE_LAST_PAGE,
+    payload: page,
+});
+
+export const setStatisticsShowed = (statistic: number | undefined): SetStatisticsShowed => ({
+    type: SET_STATISTICS_SHOWED,
+    payload: statistic,
+});
+
+export const setStatisticsHided = (statistic: number | undefined): SetStatisticsHided => ({
+    type: SET_STATISTICS_HIDED,
+    payload: statistic,
+});
+
 
 export const tfStateChange = (tfstate: string | undefined): TfStateChangeAction => ({
     type: TF_STATE_CHANGE,

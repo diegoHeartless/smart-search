@@ -1,28 +1,44 @@
 import {takeEvery, call, put, select} from 'redux-saga/effects';
-import {SEARCH_START, SearchStartAction, searchSuccess, SearchTypes, tfStateChange} from "../actions/search";
+import {
+    changeLastPage,
+    SEARCH_START,
+    SearchStartAction,
+    searchSuccess,
+    SearchTypes, setStatisticsHided, setStatisticsShowed,
+    tfStateChange
+} from "../actions/search";
 import {execute, ozonSearch} from "../../../rest-services/search-service";
 import * as parse5 from 'parse5';
-import {Simulate} from "react-dom/test-utils";
+import {renderIntoDocument, Simulate} from "react-dom/test-utils";
+import e from "express";
 
 
 
 function* searchAsync(action: SearchStartAction): any {
 
-    let page = 1;
+    let page = yield select((state: any) => state?.searchReducer?.lastPage);
     const resultData: any[] = [];
-    while (resultData.length < 50) {
+    let validSearch = true;
+    let showed: number = 0;
+    let hided: number = 0;
+    let emptyRedirect: number = 0;
+    while (validSearch && resultData.length < 50 && emptyRedirect < 5) {
         let data = yield select((state: any) => state?.searchReducer?.tfState);
         console.log(data)
-        let response: string = yield call(() => ozonCallAsync(action.payload, page, data))
-        const htmlDoc = parse5.parseFragment(response);
+        let response: string = yield call(() => ozonCallAsync(action.payload, page, data));
+        console.log(response)
+
+               const htmlDoc = parse5.parseFragment(response);
         const divWithItems = yield call(() => recursiveSearchAsync(htmlDoc.childNodes));
         const dataState = divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value;
         const searchData = dataState ? JSON.parse(divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value) : undefined;
         console.log(searchData)
-        if (searchData?.items?.length === 0) {
+        if (!searchData || searchData?.items?.length === 0) {
             console.log('search empty')
-            break;
+            validSearch = false
         }
+
+        const currentItemsLength = resultData.length;
         searchData?.items.forEach((item: any) => {
             let itemdata: any = {
                 link: `https://www.ozon.ru`+item?.action?.link,
@@ -52,11 +68,20 @@ function* searchAsync(action: SearchStartAction): any {
             console.log(itemdata.title.includes(action.payload))
             if (itemdata.title.toLowerCase().includes(action.payload)) {
                 resultData.push(itemdata)
+                showed= showed + 1;
+            }
+            else {
+                hided = hided + 1;
             }
             console.log(resultData)
         })
-
+        if (currentItemsLength === resultData.length) {
+            emptyRedirect = emptyRedirect + 1;
+        }
+        yield put(setStatisticsShowed(showed));
+        yield put(setStatisticsHided(hided));
         page = page + 1;
+        yield put(changeLastPage(page));
     }
     yield put(searchSuccess(resultData));
 }
@@ -104,8 +129,11 @@ function* ozonCallAsync(search: string, page?: number, tfstate?: string): any {
             response.indexOf('");</script>',
                 response.indexOf('location.replace(')
             )
-        ).replaceAll('\\/', '/').replaceAll('\\', '').replaceAll('u0026', '&')
-        console.log('redirect detected')
+        ).replaceAll('\\/', '/')
+            .replaceAll('\\', '')
+            .replaceAll('u0026', '&')
+            .replaceAll('u002b', " ")
+
         console.log('redirect url = ' + redirect)
         response = yield call(() => execute(redirect+(tfstate ? `&tf_state=${tfstate}`: '')));
         yield put(tfStateChange(undefined));

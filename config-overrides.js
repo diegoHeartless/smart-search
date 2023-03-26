@@ -1,3 +1,4 @@
+/*
 const webpack = require("webpack");
 module.exports = function override (config, env) {
     console.log('override')
@@ -39,3 +40,4 @@ module.exports = function override (config, env) {
 
     return config
 }
+*/
