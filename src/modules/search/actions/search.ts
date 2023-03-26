@@ -1,4 +1,5 @@
 import e from "express";
+import {SearchType} from "../utils/consts";
 
 export const SEARCH_START = "SEARCH_START";
 export const SEARCH_SUCCESS = "SEARCH_SUCCESS";
@@ -9,7 +10,7 @@ export const SET_STATISTICS_HIDED = "SET_STATISTICS_HIDED";
 
 export interface SearchStartAction {
     type: typeof SEARCH_START;
-    payload: string
+    payload: {search: string, searchType: SearchType}
 }
 
 interface SearchSuccessAction {
@@ -45,9 +46,9 @@ export type SearchTypes =
     | SetStatisticsShowed
     | SetStatisticsHided;
 
-export const searchStart = (search: string): SearchStartAction => ({
+export const searchStart = (search: string, searchType: SearchType): SearchStartAction => ({
     type: SEARCH_START,
-    payload: search,
+    payload: {search, searchType},
 });
 
 export const changeLastPage = (page: number): ChangeLastPage => ({

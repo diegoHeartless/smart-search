@@ -11,11 +11,12 @@ import {execute, ozonSearch} from "../../../rest-services/search-service";
 import * as parse5 from 'parse5';
 import {renderIntoDocument, Simulate} from "react-dom/test-utils";
 import e from "express";
+import {SearchType} from "../utils/consts";
 
 
 
 function* searchAsync(action: SearchStartAction): any {
-
+    console.log(action)
     let page = yield select((state: any) => state?.searchReducer?.lastPage);
     const resultData: any[] = [];
     let validSearch = true;
@@ -24,17 +25,14 @@ function* searchAsync(action: SearchStartAction): any {
     let emptyRedirect: number = 0;
     while (validSearch && resultData.length < 50 && emptyRedirect < 5) {
         let data = yield select((state: any) => state?.searchReducer?.tfState);
-        console.log(data)
-        let response: string = yield call(() => ozonCallAsync(action.payload, page, data));
-        console.log(response)
+        let response: string = yield call(() => ozonCallAsync(action.payload.search, page, data));
 
-               const htmlDoc = parse5.parseFragment(response);
+        const htmlDoc = parse5.parseFragment(response);
         const divWithItems = yield call(() => recursiveSearchAsync(htmlDoc.childNodes));
         const dataState = divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value;
         const searchData = dataState ? JSON.parse(divWithItems?.attrs.filter((attr: { name: string; }) => attr.name === 'data-state')[0].value) : undefined;
         console.log(searchData)
         if (!searchData || searchData?.items?.length === 0) {
-            console.log('search empty')
             validSearch = false
         }
 
@@ -64,16 +62,15 @@ function* searchAsync(action: SearchStartAction): any {
                     }
                 }
             })
-            console.log(itemdata)
-            console.log(itemdata.title.includes(action.payload))
-            if (itemdata.title.toLowerCase().includes(action.payload)) {
+
+            if (searchTypeCondition(itemdata, action.payload.searchType, action.payload.search)) {
                 resultData.push(itemdata)
                 showed= showed + 1;
             }
             else {
                 hided = hided + 1;
             }
-            console.log(resultData)
+
         })
         if (currentItemsLength === resultData.length) {
             emptyRedirect = emptyRedirect + 1;
@@ -100,8 +97,6 @@ function* recursiveSearchAsync(nodes: any[]): any {
                 return attr.name === "id"
                     && attr.value.includes("state-megaPaginator");
             })) {
-                console.log(nodes[i])
-                console.log("data-state")
                 const nextpage = JSON.parse(nodes[i].attrs.find((atr: { name: string; }) => atr.name==="data-state").value).nextPage;
                 if (nextpage) {
                     console.log(nextpage.substring(nextpage.indexOf('tf_state=') + 9, nextpage.length))
@@ -121,9 +116,7 @@ function* recursiveSearchAsync(nodes: any[]): any {
 function* ozonCallAsync(search: string, page?: number, tfstate?: string): any {
 
     let response: string = yield call(() => ozonSearch(search, undefined, page, tfstate))
-    console.log(response)
     if (response.includes('location.replace(')){
-        console.log('redirect detected')
         const redirect = response.substring(
             response.indexOf('location.replace(')+18,
             response.indexOf('");</script>',
@@ -134,11 +127,30 @@ function* ozonCallAsync(search: string, page?: number, tfstate?: string): any {
             .replaceAll('u0026', '&')
             .replaceAll('u002b', " ")
 
-        console.log('redirect url = ' + redirect)
+
         response = yield call(() => execute(redirect+(tfstate ? `&tf_state=${tfstate}`: '')));
         yield put(tfStateChange(undefined));
     }
     return response
+}
+
+function searchTypeCondition(item: any, searchType: SearchType, search: string): any {
+    switch (searchType) {
+        case SearchType.AnyOrderMatch:{
+            console.log('any')
+            const searchArray = search.split(' ');
+            const itemArray = item.title.toLowerCase().split(' ');
+            return searchArray.every(value => itemArray.includes(value))
+        }
+        case SearchType.FullMatch: {
+            console.log('full')
+            return item.title.toLowerCase().includes(search);
+        }
+        default: {
+            console.log('default')
+            return false
+        }
+    }
 }
 
 

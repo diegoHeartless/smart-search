@@ -1,13 +1,14 @@
 import React, {ReactElement, useCallback, useEffect, useRef, useState} from 'react';
-import {Button, Card, Carousel, Col, Input, Progress, Row, Space, Spin} from 'antd';
+import {Button, Card, Carousel, Col, Input, Progress, Radio, Row, Space, Spin} from 'antd';
 import {CarouselProvider, Slider, Slide, ButtonBack, ButtonNext} from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
+import {SearchType} from "../utils/consts";
 
 const {Search} = Input;
 
 interface SearchFieldProps {
     content: any[];
-    searchStart: (search: string) => void;
+    searchStart: (search: string, searchType: SearchType) => void;
     loading: boolean,
     statistics: {
         showed: number,
@@ -16,18 +17,17 @@ interface SearchFieldProps {
 }
 
 const SearchField = ({content, searchStart, loading, statistics}: SearchFieldProps) => {
+    const [searchType, setSearchType] = useState(SearchType.FullMatch)
     const [searchValue, setSearchValue] = useState('')
     const onSearch = (value: string) => {
-        console.log(value)
         setSearchValue(value);
-        searchStart(value);
+        searchStart(value, searchType);
     };
     const [contentS, setContentS] = useState<any[]>();
 
     const elements = useCallback(() => {
         const result: any = [];
         content?.forEach((con: any, index) => {
-            console.log()
             result.push(
                 <Col span={6}>
                     <Card title={con.title} extra={<a href={con.link}>link</a>}>
@@ -39,7 +39,6 @@ const SearchField = ({content, searchStart, loading, statistics}: SearchFieldPro
                         >
                             <Slider>
                                 {con.images.map((image, index) => {
-                                    console.log(index)
                                     return (<Slide index={index}>
                                         <img src={image?.image?.link} width={200} height={200}/>
                                     </Slide>)
@@ -73,6 +72,11 @@ const SearchField = ({content, searchStart, loading, statistics}: SearchFieldPro
         size="large"
         onSearch={onSearch}
     />
+
+        <Radio.Group onChange={(event)=> setSearchType(event.target.value)} value={searchType}>
+            <Radio value={SearchType.FullMatch}>Полное совпадение</Radio>
+            <Radio value={SearchType.AnyOrderMatch}>Включается все слова из запроса</Radio>
+        </Radio.Group>
         {loading ?
             <Spin tip="Loading" size="large" style={{
                 top: 100
