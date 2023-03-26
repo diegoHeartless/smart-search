@@ -1,17 +1,28 @@
 import {takeEvery, call, put, select} from 'redux-saga/effects';
-import {SEARCH_START, SearchStartAction, searchSuccess, SearchTypes, tfStateChange} from "../actions/search";
+import {
+    changeLastPage,
+    SEARCH_START,
+    SearchStartAction,
+    searchSuccess,
+    SearchTypes, setStatisticsHided, setStatisticsShowed,
+    tfStateChange
+} from "../actions/search";
 import {execute, ozonSearch} from "../../../rest-services/search-service";
 import * as parse5 from 'parse5';
 import {renderIntoDocument, Simulate} from "react-dom/test-utils";
+import e from "express";
 
 
 
 function* searchAsync(action: SearchStartAction): any {
 
-    let page = 1;
+    let page = yield select((state: any) => state?.searchReducer?.lastPage);
     const resultData: any[] = [];
     let validSearch = true;
-    while (validSearch && resultData.length < 50) {
+    let showed: number = 0;
+    let hided: number = 0;
+    let emptyRedirect: number = 0;
+    while (validSearch && resultData.length < 50 && emptyRedirect < 5) {
         let data = yield select((state: any) => state?.searchReducer?.tfState);
         console.log(data)
         let response: string = yield call(() => ozonCallAsync(action.payload, page, data));
@@ -26,6 +37,8 @@ function* searchAsync(action: SearchStartAction): any {
             console.log('search empty')
             validSearch = false
         }
+
+        const currentItemsLength = resultData.length;
         searchData?.items.forEach((item: any) => {
             let itemdata: any = {
                 link: `https://www.ozon.ru`+item?.action?.link,
@@ -55,11 +68,20 @@ function* searchAsync(action: SearchStartAction): any {
             console.log(itemdata.title.includes(action.payload))
             if (itemdata.title.toLowerCase().includes(action.payload)) {
                 resultData.push(itemdata)
+                showed= showed + 1;
+            }
+            else {
+                hided = hided + 1;
             }
             console.log(resultData)
         })
-
+        if (currentItemsLength === resultData.length) {
+            emptyRedirect = emptyRedirect + 1;
+        }
+        yield put(setStatisticsShowed(showed));
+        yield put(setStatisticsHided(hided));
         page = page + 1;
+        yield put(changeLastPage(page));
     }
     yield put(searchSuccess(resultData));
 }

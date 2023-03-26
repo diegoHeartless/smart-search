@@ -6,7 +6,9 @@ import {SearchState} from "../reducers/search";
 
 function mapStateToProps(state: {searchReducer: SearchState}, ownProps: any) {
     return {
-        content: state.searchReducer.content
+        content: state.searchReducer.content,
+        loading: state.searchReducer.loading,
+        statistics: state.searchReducer.statistics
     };
 }
 

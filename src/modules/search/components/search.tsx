@@ -1,31 +1,36 @@
 import React, {ReactElement, useCallback, useEffect, useRef, useState} from 'react';
-import {Button, Card, Carousel, Col, Input, Row, Space} from 'antd';
-import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
+import {Button, Card, Carousel, Col, Input, Progress, Row, Space, Spin} from 'antd';
+import {CarouselProvider, Slider, Slide, ButtonBack, ButtonNext} from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
 
-const { Search } = Input;
+const {Search} = Input;
 
 interface SearchFieldProps {
     content: any[];
     searchStart: (search: string) => void;
+    loading: boolean,
+    statistics: {
+        showed: number,
+        hided: number
+    }
 }
 
-const SearchField = ({content, searchStart}:SearchFieldProps) => {
-    console.log(content)
-
+const SearchField = ({content, searchStart, loading, statistics}: SearchFieldProps) => {
+    const [searchValue, setSearchValue] = useState('')
     const onSearch = (value: string) => {
         console.log(value)
+        setSearchValue(value);
         searchStart(value);
     };
     const [contentS, setContentS] = useState<any[]>();
 
-    const elements = useCallback(()=> {
+    const elements = useCallback(() => {
         const result: any = [];
         content?.forEach((con: any, index) => {
             console.log()
             result.push(
                 <Col span={6}>
-                    <Card title={con.title} extra={<a href={con.link}>link</a>} >
+                    <Card title={con.title} extra={<a href={con.link}>link</a>}>
                         <p>{con.price}</p>
                         <CarouselProvider
                             totalSlides={con.images.length}
@@ -34,27 +39,25 @@ const SearchField = ({content, searchStart}:SearchFieldProps) => {
 
                         >
                             <Slider>
-                            {con.images.map((image, index) => {
-                                console.log(index)
+                                {con.images.map((image, index) => {
+                                    console.log(index)
                                     return (<Slide index={index}>
-                                       <img src={image?.image?.link} width={200} height={200} />
+                                        <img src={image?.image?.link} width={200} height={200}/>
                                     </Slide>)
 
-                            })}
-                                </Slider>
+                                })}
+                            </Slider>
                             <ButtonBack>Back</ButtonBack>
                             <ButtonNext>Next</ButtonNext>
-                    </CarouselProvider>
+                        </CarouselProvider>
                     </Card>
                 </Col>
             )
         })
         const rows: ReactElement[] = [];
-        console.log(result.length)
         while (result.length !== 0) {
 
             const row = result.splice(0, 4);
-            console.log(result.length)
             rows.push(<Row>
                 {row}
             </Row>)
@@ -71,9 +74,22 @@ const SearchField = ({content, searchStart}:SearchFieldProps) => {
         size="large"
         onSearch={onSearch}
     />
-        <div>
-            {elements()}
-        </div>
+        {loading ?
+            <Spin tip="Loading" size="large" style={{
+                top: 100
+            }}>
+                <div className="content"/>
+            </Spin>
+            :
+            <div>
+                <span>Скрыто: {statistics.hided} Показано: {statistics.showed}</span>
+                <Progress percent={statistics.hided/(statistics.showed + statistics.hided) * 100} />
+                <Button
+                    onClick={() => onSearch(searchValue)}>
+                    Искать дальше
+                </Button>
+                {elements()}
+            </div>}
     </>
 }
 
