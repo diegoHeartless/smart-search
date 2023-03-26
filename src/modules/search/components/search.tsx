@@ -36,7 +36,6 @@ const SearchField = ({content, searchStart, loading, statistics}: SearchFieldPro
                             totalSlides={con.images.length}
                             naturalSlideWidth={200}
                             naturalSlideHeight={200}
-
                         >
                             <Slider>
                                 {con.images.map((image, index) => {
