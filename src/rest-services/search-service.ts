@@ -5,23 +5,17 @@ const serviceUrl = 'https://www.ozon.ru/search/?text=fr&from_global=true';
 //let driver = await new Builder().forBrowser('firefox').build();
 export const ozonSearch = async (search: string, redirectUrl?: string, page?: number, tf_state?: string): Promise<string> => {
     delete axios.defaults.headers.common['Access-Control-Allow-Origin'];
-    const headers = {
-        headers: {
-            origin: "https://google.com",
-            referer: "https://google.com/"
-        }
-    }
     let response ;
     console.log(tf_state)
     console.log(redirectUrl)
     console.log(search)
     console.log(search)
     if (redirectUrl) {
-        response = await axios.get(redirectUrl + tf_state ? `&tf_state=${tf_state}`: '', headers)
+        response = await axios.get(redirectUrl + tf_state ? `&tf_state=${tf_state}`: '')
     } else {
         console.log(`https://www.ozon.ru/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: ''))
         response = await axios.get(
-            (`https://www.ozon.ru/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: '')), headers);
+            `https://www.ozon.ru/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: ''));
 
     }
     console.log(response)
