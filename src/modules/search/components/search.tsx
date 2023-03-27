@@ -3,6 +3,7 @@ import {Button, Card, Carousel, Col, Input, Progress, Radio, Row, Space, Spin} f
 import {CarouselProvider, Slider, Slide, ButtonBack, ButtonNext} from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
 import {SearchType} from "../utils/consts";
+import Link from "antd/es/typography/Link";
 
 const {Search} = Input;
 
@@ -30,7 +31,7 @@ const SearchField = ({content, searchStart, loading, statistics}: SearchFieldPro
         content?.forEach((con: any, index) => {
             result.push(
                 <Col span={6}>
-                    <Card title={con.title} extra={<a href={con.link}>link</a>}>
+                    <Card title={<Link href={con.link} target={"_blank"} >{con.title}</Link>}>
                         <p>{con.price}</p>
                         <CarouselProvider
                             totalSlides={con.images.length}
@@ -40,7 +41,7 @@ const SearchField = ({content, searchStart, loading, statistics}: SearchFieldPro
                             <Slider>
                                 {con.images.map((image, index) => {
                                     return (<Slide index={index}>
-                                        <img src={image?.image?.link} width={200} height={200}/>
+                                        <img src={image} width={200} height={200} loading="lazy"/>
                                     </Slide>)
 
                                 })}
@@ -54,7 +55,6 @@ const SearchField = ({content, searchStart, loading, statistics}: SearchFieldPro
         })
         const rows: ReactElement[] = [];
         while (result.length !== 0) {
-
             const row = result.splice(0, 4);
             rows.push(<Row>
                 {row}

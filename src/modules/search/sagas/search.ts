@@ -37,10 +37,14 @@ function* searchAsync(action: SearchStartAction): any {
         }
 
         const currentItemsLength = resultData.length;
-        searchData?.items.forEach((item: any) => {
-            let itemdata: any = {
-                link: `https://www.ozon.ru`+item?.action?.link,
-                images: item?.tileImage?.items
+        searchData?.items?.forEach((item: any) => {
+                let itemdata: any = {
+                link: `https://www.ozon.ru` + item?.action?.link,
+                images: item?.tileImage?.items.map(img => {
+                    const index = img?.image?.link.indexOf('multimedia');
+                    const replacePart = img?.image?.link.substring(index, index + 13)
+                    return img?.image?.link.replace(replacePart, replacePart+'wc200/')
+                })
             }
             item.mainState.forEach((state: any) => {
                 if (state?.atom?.price?.price) {
@@ -65,7 +69,7 @@ function* searchAsync(action: SearchStartAction): any {
 
             if (searchTypeCondition(itemdata, action.payload.searchType, action.payload.search)) {
                 resultData.push(itemdata)
-                showed= showed + 1;
+                showed = showed + 1;
             }
             else {
                 hided = hided + 1;
@@ -75,11 +79,11 @@ function* searchAsync(action: SearchStartAction): any {
         if (currentItemsLength === resultData.length) {
             emptyRedirect = emptyRedirect + 1;
         }
-        yield put(setStatisticsShowed(showed));
-        yield put(setStatisticsHided(hided));
         page = page + 1;
         yield put(changeLastPage(page));
     }
+    yield put(setStatisticsShowed(showed));
+    yield put(setStatisticsHided(hided));
     yield put(searchSuccess(resultData));
 }
 

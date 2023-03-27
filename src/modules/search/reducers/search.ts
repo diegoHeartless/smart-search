@@ -37,6 +37,7 @@ const searchReducer = (state: SearchState = initialState, action: SearchTypes) =
             return {
                 ...state,
                 loading: true,
+                lastPage: 1,
                 statistics: {
                     showed: 0,
                     hided: 0
