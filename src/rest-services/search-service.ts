@@ -13,9 +13,9 @@ export const ozonSearch = async (search: string, redirectUrl?: string, page?: nu
     if (redirectUrl) {
         response = await axios.get(redirectUrl + tf_state ? `&tf_state=${tf_state}`: '')
     } else {
-        console.log(`https://www.ozon.ru/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: ''))
+        console.log(`/ozon/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: ''))
         response = await axios.get(
-            `https://www.ozon.ru/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: ''));
+            `/ozon/search/?text=${search}&from_global=true` + (page ? `&page=${page}`: '') + (tf_state ? `&tf_state=${tf_state}`: ''));
 
     }
     console.log(response)
