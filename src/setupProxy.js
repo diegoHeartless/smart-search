@@ -9,11 +9,14 @@ module.exports = function(app) {
                 return path.replace('/ozon', '/')
             },
             onProxyRes: function (proxyReq, req, rsp) {
+                 console.log(proxyReq)
                  proxyReq.headers['origin'] = 'http://mnnvh.fvds.ru';
-                   proxyReq.headers['referer'] = 'http://mnnvh.fvds.ru/';
+                 proxyReq.headers['referer'] = 'http://mnnvh.fvds.ru/';
             },
             target: 'http://www.ozon.ru',
             changeOrigin: true,
+            externalResolver: true,
+            bodyParser: false
         })
     );
     app.listen(80)
